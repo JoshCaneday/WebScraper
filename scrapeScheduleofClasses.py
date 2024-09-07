@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import Select
 from bs4 import BeautifulSoup
-import requests
 
 numPages = 11 #Number of pages
 department = 'MATH' #Chosen department
@@ -28,10 +27,9 @@ submit_button.click()
 html = driver.page_source
 
 soup = BeautifulSoup(html, "html.parser")
-courses = soup.findAll("span", attrs={"class":"boldtxt", "onclick": None}) # course title
-professors = soup.findAll("a", attrs={"href":"#!"}) # professor name
-
-
+courses = soup.find_all("span", attrs={"class":"boldtxt", "onclick": None}) # course title
+professors = soup.find_all("a", attrs={"href":"#!"}) # professor name
+courseNumbers = soup.find_all("td", attrs={"class":"crsheader", "colspan": None}) # course number
 
 
 course_lines = []
@@ -54,7 +52,8 @@ def binarysearch(l, r, target):
 
 for j in range(len(courses)):
     if j == 0 or courses[j] != courses[j-1]:
-        course_lines.append((courses[j].sourceline+maxLinesinFile,courses[j].text, 0))
+        #course_lines.append((courseNumbers[(j*2)].sourceline+maxLinesinFile,courseNumbers[(j*2)].text, 1))
+        course_lines.append((courses[j].sourceline+maxLinesinFile,courses[j].text, 0, courseNumbers[(j*2)+1].text))
         #print(courses[j].text, courses[j].sourceline)
 
 #Repeat the above for as many pages as there are remaining
@@ -65,23 +64,22 @@ for i in range(2,numPages+1):
     html = driver.page_source
 
     soup = BeautifulSoup(html, "html.parser")
-    courses = soup.findAll("span", attrs={"class":"boldtxt", "onclick": None}) # course title
+    courses = soup.find_all("span", attrs={"class":"boldtxt", "onclick": None}) # course title
+    courseNumbers = soup.find_all("td", attrs={"class":"crsheader", "colspan": None}) # course number
     for j in range(len(courses)):
         if j == 0 or courses[j] != courses[j-1]:
-            course_lines.append((courses[j].sourceline + i*maxLinesinFile,courses[j].text, 0))
+            course_lines.append((courses[j].sourceline + i*maxLinesinFile,courses[j].text, 0, courseNumbers[(j*2)+1].text))
             #print(courses[j].text, courses[j].sourceline)
 
 #print(course_lines)
 link_element = driver.find_element(By.LINK_TEXT, "First")
 link_element.click()
 
-temp = soup.findAll("script", attrs={"type":"text/javascript"})
-print(temp[-1].sourceline)
 # Below is for Professors
 
 for j in range(len(professors)):
     if j == 0 or professors[j] != professors[j-1]:
-        binarysearch(0,len(course_lines), (professors[j].sourceline+maxLinesinFile,professors[j].text,1))
+        binarysearch(0,len(course_lines), (professors[j].sourceline+maxLinesinFile,professors[j].text,2,"N/A"))
         #print(professors[j].text, professors[j].sourceline)
 
 #Repeat the above for as many pages as there are remaining
@@ -92,14 +90,25 @@ for i in range(2,numPages+1):
     html = driver.page_source
 
     soup = BeautifulSoup(html, "html.parser")
-    professors = soup.findAll("a", attrs={"href":"#!"}) # professor name
+    professors = soup.find_all("a", attrs={"href":"#!"}) # professor name
     for j in range(len(professors)):
         if j == 0 or professors[j] != professors[j-1]:
-            binarysearch(0,len(course_lines), (professors[j].sourceline + i*maxLinesinFile,professors[j].text,1))
+            binarysearch(0,len(course_lines), (professors[j].sourceline + i*maxLinesinFile,professors[j].text,2,"N/A"))
             #print(professors[j].text, professors[j].sourceline)
 
+res = ""
 #print(course_lines)
+curCourseNum = "0"
+curCourseName = "None"
 for i in course_lines:
-    print(i[0],i[1],i[2])
+    if i[2] == 0:
+        curCourseName = str(i[1])
+        curCourseNum = str(i[3])
+    elif i[2] == 2:
+        res += "('" + curCourseName.strip() + "','" + curCourseNum + "',True," + i[1].strip() + "),"
+    #print(i[0],i[1],i[2],i[3])
+    #res += (i[3])
+print(res)
+
 driver.quit()
 
