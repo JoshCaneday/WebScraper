@@ -96,7 +96,7 @@ for i in range(2,numPages+1):
             binarysearch(0,len(course_lines), (professors[j].sourceline + i*maxLinesinFile,professors[j].text,2,"N/A"))
             #print(professors[j].text, professors[j].sourceline)
 
-res = ""
+res = []
 #print(course_lines)
 curCourseNum = "0"
 curCourseName = "None"
@@ -105,10 +105,9 @@ for i in course_lines:
         curCourseName = str(i[1])
         curCourseNum = str(i[3])
     elif i[2] == 2:
-        res += "('" + curCourseName.strip() + "','" + curCourseNum + "',True," + i[1].strip() + "),"
+        res.append("('" + curCourseName.strip() + "','" + curCourseNum + "',True," + i[1].strip() + "),")
     #print(i[0],i[1],i[2],i[3])
     #res += (i[3])
-print(res)
 
 driver.quit()
 
