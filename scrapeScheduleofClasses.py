@@ -4,8 +4,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import Select
 from bs4 import BeautifulSoup
 
-numPages = 11 #Number of pages
-department = 'MATH' #Chosen department
+numPages = 15 #Number of pages
+department = 'CSE ' #Chosen department (NOTE for this website, any department with length of 3, such as CSE or DSC, contains a space at the end)
+                    #So, if you want to scrape from the CSE department, you must intitialize the department variable as 'CSE ' not 'CSE'
 maxLinesinFile = 10000 # Find the file/page with the most lines and set this variable to that, double it for good measure
 
 
@@ -20,6 +21,11 @@ select_element = driver.find_element(By.ID, "selectedSubjects")
 select = Select(select_element)
 select.select_by_value(department)
 
+select_checkbox1 = driver.find_element(By.ID, "schedOption31")
+select_checkbox1.click()
+
+select_checkbox2 = driver.find_element(By.ID, "schedOption131")
+select_checkbox2.click()
 
 submit_button = driver.find_element(By.ID, "socFacSubmit")
 submit_button.click()
@@ -49,12 +55,15 @@ def binarysearch(l, r, target):
 
 
 # Below is for Courses
-
-for j in range(len(courses)):
-    if j == 0 or courses[j] != courses[j-1]:
-        #course_lines.append((courseNumbers[(j*2)].sourceline+maxLinesinFile,courseNumbers[(j*2)].text, 1))
-        course_lines.append((courses[j].sourceline+maxLinesinFile,courses[j].text, 0, courseNumbers[(j*2)+1].text))
-        #print(courses[j].text, courses[j].sourceline)
+skip = 0
+j = 0
+while j < (len(courses)):
+    if courseNumbers[(j*2)+1+(skip*2)].get('align') != None:
+        skip += 1
+        j -= 1
+    elif j == 0 or courses[j].text != courses[j-1].text or courseNumbers[(j*2)+1+(skip*2)].text != courseNumbers[(j*2)+1+(skip*2)].text:
+        course_lines.append((courses[j].sourceline+maxLinesinFile,courses[j].text, 0, courseNumbers[(j*2)+1+(skip*2)].text))
+    j+=1
 
 #Repeat the above for as many pages as there are remaining
 for i in range(2,numPages+1):
@@ -65,11 +74,16 @@ for i in range(2,numPages+1):
 
     soup = BeautifulSoup(html, "html.parser")
     courses = soup.find_all("span", attrs={"class":"boldtxt", "onclick": None}) # course title
-    courseNumbers = soup.find_all("td", attrs={"class":"crsheader", "colspan": None}) # course number
-    for j in range(len(courses)):
-        if j == 0 or courses[j] != courses[j-1]:
-            course_lines.append((courses[j].sourceline + i*maxLinesinFile,courses[j].text, 0, courseNumbers[(j*2)+1].text))
-            #print(courses[j].text, courses[j].sourceline)
+    courseNumbers = soup.find_all("td", attrs={"class":"crsheader", "colspan": None, "title": None}) # course number
+    skip = 0
+    j = 0
+    while j < (len(courses)):
+        if courseNumbers[(j*2)+1+(skip*2)].get('align') != None:
+            skip += 1
+            j -= 1
+        elif j == 0 or courses[j].text != courses[j-1].text or courseNumbers[(j*2)+1+(skip*2)].text != courseNumbers[(j*2)+1+(skip*2)].text:
+            course_lines.append((courses[j].sourceline + i*maxLinesinFile,courses[j].text, 0, courseNumbers[(j*2)+1+(skip*2)].text))
+        j+=1
 
 #print(course_lines)
 link_element = driver.find_element(By.LINK_TEXT, "First")
@@ -78,7 +92,7 @@ link_element.click()
 # Below is for Professors
 
 for j in range(len(professors)):
-    if j == 0 or professors[j] != professors[j-1]:
+    if j == 0 or professors[j].text != professors[j-1].text:
         binarysearch(0,len(course_lines), (professors[j].sourceline+maxLinesinFile,professors[j].text,2,"N/A"))
         #print(professors[j].text, professors[j].sourceline)
 
@@ -92,9 +106,8 @@ for i in range(2,numPages+1):
     soup = BeautifulSoup(html, "html.parser")
     professors = soup.find_all("a", attrs={"href":"#!"}) # professor name
     for j in range(len(professors)):
-        if j == 0 or professors[j] != professors[j-1]:
+        if j == 0 or professors[j].text != professors[j-1].text:
             binarysearch(0,len(course_lines), (professors[j].sourceline + i*maxLinesinFile,professors[j].text,2,"N/A"))
-            #print(professors[j].text, professors[j].sourceline)
 
 res = []
 #print(course_lines)
@@ -106,8 +119,9 @@ for i in course_lines:
         curCourseNum = str(i[3])
     elif i[2] == 2:
         res.append("('" + curCourseName.strip() + "','" + curCourseNum + "',True," + i[1].strip() + "),")
-    #print(i[0],i[1],i[2],i[3])
-    #res += (i[3])
+    
 
+
+    
 driver.quit()
 
