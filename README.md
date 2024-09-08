@@ -1,2 +1,2 @@
 # WebScraper
-Project for Web Scraping to be used on future projects that utilize data on other websites.
+Utilizes the Selenium and BeautifulSoup libraries to scrape data from a couple of the University of California, San Diego course catalog websites. With this data, I formatted it in an organized format so that it can be easily read. The final formatting of the data was geared toward another one of my projects on my GitHub, "UCSD_Course_Finder". The data was formatted in this way such that I could easily copy and paste the data straight into my database for that project using MySQL. For more information on that, please visit my other repository, "UCSD_Course_Finder".
