@@ -39,13 +39,16 @@ Before running this project, ensure that you have the following installed:
    ```
 4. **Download a Web Driver**:
    Selenium requires a web driver to interact with the browser. You need to download the driver for your browser:
-   Chrome: Download ChromeDriver
-   Firefox: Download GeckoDriver
+   
+   Chrome: Download ChromeDriver (Make sure to get the latest version, or whatever version that is currently compatible)
+   
+   Firefox: Download GeckoDriver (Make sure to get the latest version, or whatever version that is currently compatible)
+   
    Ensure the driver is in your system's PATH or provide its path in the script when initializing Selenium.
-5. **Set Parameters**:
+6. **Set Parameters**:
    Within the two python files, scrapeScheduleofClasses.py and scrapeCourseCatalog.py, at the top of each file are a few parameters that need to be set. These depend on which part
    of the UCSD course catalog websites you want to scrape from. For example, scraping data on all of the CSE courses would be different from scraping the data on all of the BENG courses.
-6. **Run the Scraper**:
+7. **Run the Scraper**:
    ```bash
    python formatData.py
    ```
